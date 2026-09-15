@@ -12,7 +12,8 @@
       "infoPlist": {
         "NSFaceIDUsageDescription": "BioAuthApp uses Face ID to authenticate you and retrieve your secure token.",
         "NSCameraUsageDescription": "BioAuthApp requires front camera access to perform identity liveness checks."
-      }
+      },
+      "bundleIdentifier": "com.anonymous.BioAuthApp"
     },
     "android": {
       "adaptiveIcon": {

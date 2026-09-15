@@ -7,6 +7,7 @@
  */
 
 import { AuthenticationType } from 'expo-local-authentication';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -51,6 +52,7 @@ function getBiometricLabel(capabilities: HardwareCapabilities | null): string {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function LoginScreen() {
+  const router = useRouter();
   /**
    * useState — Why three separate state values?
    *
@@ -66,6 +68,12 @@ export default function LoginScreen() {
   const [capabilities, setCapabilities] = useState<HardwareCapabilities | null>(null);
   const [enrolled, setEnrolled] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
+  /**
+   * authSucceeded — set to true after a successful authenticateAndRetrieveToken
+   * call. Reveals the Liveness Check CTA so the user follows the full
+   * security flow: Enroll → Authenticate → Liveness.
+   */
+  const [authSucceeded, setAuthSucceeded] = useState(false);
 
   /**
    * useEffect with an empty dependency array [] runs exactly once, right
@@ -112,6 +120,7 @@ export default function LoginScreen() {
         kind: 'success',
         message: `Authentication successful!\n${token}`,
       });
+      setAuthSucceeded(true);
     } catch (e) {
       setStatus({ kind: 'error', message: String(e) });
     }
@@ -120,6 +129,7 @@ export default function LoginScreen() {
   async function handleClear() {
     await clearToken();
     setEnrolled(false);
+    setAuthSucceeded(false);
     setStatus({ kind: 'idle' });
   }
 
@@ -205,6 +215,17 @@ export default function LoginScreen() {
         >
           <Text style={styles.buttonText}>🧬  Authenticate</Text>
         </TouchableOpacity>
+
+        {/* Liveness CTA — only surfaced after auth succeeds */}
+        {authSucceeded && (
+          <TouchableOpacity
+            style={[styles.button, styles.buttonLiveness]}
+            onPress={() => router.push('/liveness')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.buttonText}>📷  Proceed to Liveness Check</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* ── Footer zone ── */}
@@ -336,6 +357,11 @@ const styles = StyleSheet.create({
   },
   buttonAuth: {
     backgroundColor: BLUE,
+  },
+  buttonLiveness: {
+    backgroundColor: '#1C1C1E',
+    borderWidth: 1,
+    borderColor: BLUE,
   },
   buttonDisabled: {
     opacity: 0.4,
