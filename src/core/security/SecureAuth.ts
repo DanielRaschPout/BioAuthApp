@@ -14,6 +14,11 @@ import * as SecureStore from 'expo-secure-store';
 // change in one place.
 const TOKEN_KEY = 'bio_auth_demo_token';
 
+// Separate key for the user-defined secret stored via SecureVaultScreen.
+// Using a distinct key means the vault and the token flow never collide —
+// clearing one does not affect the other.
+const VAULT_SECRET_KEY = 'bio_auth_vault_secret';
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export type AuthenticationType = LocalAuthentication.AuthenticationType;
@@ -117,4 +122,65 @@ export async function isTokenEnrolled(): Promise<boolean> {
  */
 export async function clearToken(): Promise<void> {
   await SecureStore.deleteItemAsync(TOKEN_KEY);
+}
+
+// ─── Vault Functions (custom user secret) ─────────────────────────────────────
+
+/**
+ * Saves a user-provided string to hardware-backed secure storage.
+ *
+ * Unlike registerToken(), the caller supplies the value — this is the
+ * "Enroll Secret" action in SecureVaultScreen. We validate that the string
+ * is non-empty here so screens don't need to repeat that check.
+ */
+export async function enrollCustomSecret(secret: string): Promise<void> {
+  if (!secret.trim()) {
+    throw new Error('Secret cannot be empty.');
+  }
+  await SecureStore.setItemAsync(VAULT_SECRET_KEY, secret.trim());
+}
+
+/**
+ * Runs a biometric challenge then — only on success — reads the vault secret.
+ *
+ * Structurally identical to authenticateAndRetrieveToken() so you can compare
+ * the two and see the pattern: authenticate first, read storage second.
+ * Throwing on failure keeps error-handling logic in the screen, not here.
+ */
+export async function authenticateAndRetrieveSecret(): Promise<string> {
+  const result = await LocalAuthentication.authenticateAsync({
+    promptMessage: 'Authenticate to reveal your vault secret',
+    fallbackLabel: 'Use Passcode',
+    cancelLabel: 'Cancel',
+    disableDeviceFallback: false,
+  });
+
+  if (!result.success) {
+    throw new Error(result.error ?? 'Authentication failed');
+  }
+
+  const secret = await SecureStore.getItemAsync(VAULT_SECRET_KEY);
+
+  if (!secret) {
+    throw new Error('No secret enrolled. Please enroll a secret first.');
+  }
+
+  return secret;
+}
+
+/**
+ * Returns true if a custom secret currently exists in secure storage.
+ * Safe to call without any biometric prompt — used to set initial UI state.
+ */
+export async function isSecretEnrolled(): Promise<boolean> {
+  const secret = await SecureStore.getItemAsync(VAULT_SECRET_KEY);
+  return secret !== null;
+}
+
+/**
+ * Permanently removes the vault secret. Mirrors clearToken() in behaviour.
+ * SecureStore.deleteItemAsync is a no-op if the key doesn't exist.
+ */
+export async function clearCustomSecret(): Promise<void> {
+  await SecureStore.deleteItemAsync(VAULT_SECRET_KEY);
 }

@@ -8,7 +8,11 @@
     "scheme": "bioauthapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/images/icon.png",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "BioAuthApp uses Face ID to authenticate you and retrieve your secure token.",
+        "NSCameraUsageDescription": "BioAuthApp requires front camera access to perform identity liveness checks."
+      }
     },
     "android": {
       "adaptiveIcon": {
