@@ -1,9 +1,9 @@
 /**
  * LoginScreen.tsx — Primary authentication UI
  *
- * This screen is the "face" of the app for the portfolio demo. It wires
- * the SecureAuth service functions to React state, giving the user clear
- * visual feedback at every step of the enroll → authenticate flow.
+ * This screen is the "face" of the app. It wires the SecureAuth
+ * service functions to React state, giving the user clear visual
+ * feedback at every step of the enroll → authenticate flow.
  */
 
 import { AuthenticationType } from 'expo-local-authentication';
