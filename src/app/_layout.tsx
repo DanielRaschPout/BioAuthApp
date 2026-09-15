@@ -11,7 +11,7 @@ SplashScreen.preventAutoHideAsync();
  *
  * It renders a `Stack`, Expo Router's full-screen-push navigator, with two
  * screens:
- *   - `(tabs)`  — the tab group (Home / Explore / Vault), which mounts its
+ *   - `(tabs)`  — the tab group (Home / Vault), which mounts its
  *                 own persistent bottom tab bar (see `(tabs)/_layout.tsx`).
  *   - `liveness` — presented as a full-screen modal *outside* the tab group,
  *                 so its camera view isn't covered by that tab bar.
